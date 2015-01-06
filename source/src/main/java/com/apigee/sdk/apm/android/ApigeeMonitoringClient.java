@@ -17,6 +17,7 @@ import com.apigee.sdk.apm.android.crashlogging.CrashManager;
 import com.apigee.sdk.apm.android.metrics.LowPriorityThreadFactory;
 import com.apigee.sdk.apm.android.model.ClientLog;
 import com.apigee.sdk.data.client.ApigeeDataClient;
+import com.apigee.sdk.data.client.entities.Collection;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -29,6 +30,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -652,7 +654,26 @@ public class ApigeeMonitoringClient implements SessionTimeoutListener {
 		
 		return success;
 	}
-	
+
+
+    /**
+     * Handles push notifications.  Creates a new entity within the testpushcollection and adds an entity.
+     * Both parameters must not be null.
+     */
+    public void handlePushNotification(String notificationMessage, Boolean appOpenedByNotification) {
+        if( notificationMessage != null && appOpenedByNotification != null ) {
+            HashMap<String,Object> pushEntity = new HashMap<String,Object>();
+            pushEntity.put("type","testpushcollection");
+            pushEntity.put("raw_push_data",notificationMessage);
+            pushEntity.put("opened_app",appOpenedByNotification);
+
+            Collection pushCollection = this.dataClient.getCollection("testpushcollection");
+            pushCollection.addEntity(pushEntity);
+
+            Log.i(ClientLog.TAG_MONITORING_CLIENT, "Remote Notification payload:" + notificationMessage + ". App opened by push: " + appOpenedByNotification.toString());
+        }
+    }
+    
 	/**
 	 * Cancels any outstanding upload requests that are set up with our timer mechanism
 	 */

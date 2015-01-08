@@ -244,6 +244,10 @@ public class Client {
         });
     }
 
+    public void onPushRecieved(String pushMessage) {
+        this.monitoringClient().handlePushNotification(pushMessage,new Boolean(true));
+    }
+
     public void registerPush(Context context) {
         final String regId = GCMRegistrar.getRegistrationId(context);
         if ("".equals(regId)) {

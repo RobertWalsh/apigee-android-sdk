@@ -42,6 +42,7 @@ public class GCMIntentService extends GCMBaseIntentService {
     String message = intent.getExtras().getString("data");
     Log.i(TAG, "Received message: " + message);
     generateNotification(context, message);
+    Client.sharedClient().onPushRecieved(message);
   }
 
   /**

@@ -245,7 +245,7 @@ public class Client {
     }
 
     public void onPushRecieved(String pushMessage) {
-        this.monitoringClient().handlePushNotification(pushMessage,new Boolean(true));
+        this.monitoringClient().handlePushNotification(pushMessage, ApigeeMonitoringClient.ApigeeAppState.APP_STATE_UNKNOWN);
     }
 
     public void registerPush(Context context) {

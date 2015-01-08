@@ -115,6 +115,11 @@ public class ApigeeMonitoringClient implements SessionTimeoutListener {
     private static ThreadPoolExecutor sExecutor =
             new ThreadPoolExecutor(0, 1, SUBMIT_THREAD_TTL_MILLIS, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), new LowPriorityThreadFactory());
 
+    public enum ApigeeAppState {
+        APP_STATE_FOREGROUND,
+        APP_STATE_BACKGROUND,
+        APP_STATE_UNKNOWN
+    }
   /**
    * Metrics upload interval. Every 300000 milliseconds by default.
    */
@@ -658,19 +663,34 @@ public class ApigeeMonitoringClient implements SessionTimeoutListener {
 
     /**
      * Handles push notifications.  Creates a new entity within the testpushcollection and adds an entity.
-     * Both parameters must not be null.
      */
-    public void handlePushNotification(String notificationMessage, Boolean appOpenedByNotification) {
-        if( notificationMessage != null && appOpenedByNotification != null ) {
-            HashMap<String,Object> pushEntity = new HashMap<String,Object>();
-            pushEntity.put("type","testpushcollection");
-            pushEntity.put("raw_push_data",notificationMessage);
-            pushEntity.put("opened_app",appOpenedByNotification);
-
+    public void handlePushNotification(String notificationMessage, ApigeeAppState appState) {
+        if( notificationMessage != null ) {
             Collection pushCollection = this.dataClient.getCollection("testpushcollection");
-            pushCollection.addEntity(pushEntity);
+            if( pushCollection != null ) {
 
-            Log.i(ClientLog.TAG_MONITORING_CLIENT, "Remote Notification payload:" + notificationMessage + ". App opened by push: " + appOpenedByNotification.toString());
+                String appStateAsString = "unknown";
+                switch (appState) {
+                    case APP_STATE_BACKGROUND:
+                        appStateAsString = "background";
+                        break;
+                    case APP_STATE_FOREGROUND:
+                        appStateAsString = "foreground";
+                        break;
+                    case APP_STATE_UNKNOWN:
+                        appStateAsString = "unknown";
+                        break;
+                }
+
+                HashMap<String,Object> pushEntity = new HashMap<String,Object>();
+                pushEntity.put("type","testpushcollection");
+                pushEntity.put("raw_push_data",notificationMessage);
+                pushEntity.put("app_state",appStateAsString);
+
+                pushCollection.addEntity(pushEntity);
+
+                Log.i(ClientLog.TAG_MONITORING_CLIENT, "Remote Notification payload:" + notificationMessage + ". App State: " + appStateAsString);
+            }
         }
     }
     
